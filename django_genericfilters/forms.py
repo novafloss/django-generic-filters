@@ -24,10 +24,27 @@ class OrderFormMixin(object):
     """
     Mixin implementing order_by and order_by_reverse for your filtered
     results
+
+    A Form accept as argument in the __init__:
+        def __init__(self, data=None, files=None, auto_id='id_%s',
+        prefix=None, initial=None, error_class=ErrorList,
+        label_suffix=None, empty_permitted=False):
     """
+    _FORM_KWARGS = ['data', 'files', 'auto_id', 'prefix',
+                    'initial', 'error_class', 'label_suffix',
+                    'empty_permitted', ]
+
 
     def __init__(self, *args, **kwargs):
-        super(OrderFormMixin, self).__init__(*args, **kwargs)
+        # we can override the .get_form_kwargs() in our views
+        # to add for instance the ``request``, and not break
+        # this code
+        super_kwargs = kwargs.copy()
+        for key_to_delete in super_kwargs.keys():
+            if key_to_delete not in OrderFormMixin._FORM_KWARGS:
+                super_kwargs.pop(key_to_delete)
+
+        super(OrderFormMixin, self).__init__(*args, **super_kwargs)
 
         self.fields['order_by'] = forms.ChoiceField(
             label=_('order by'),
